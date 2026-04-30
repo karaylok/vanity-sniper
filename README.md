@@ -1,1 +1,2 @@
-# vanity-sniper
+npm init -y
+npm i ws
