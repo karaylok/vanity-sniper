@@ -1,2 +1,2 @@
-npm init -y
-npm i ws
+hi n\
+s
