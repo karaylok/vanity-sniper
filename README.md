@@ -1,5 +1,5 @@
-hi powered and developed by, neverfeelslie n\
-npm init -y n\
-npm i ws n\
-npm i n\
+hi powered and developed by, neverfeelslie \
+npm init -y \
+npm i ws \
+npm i \
 node sniper.cjs
